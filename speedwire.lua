@@ -277,7 +277,7 @@ dprint2("Speedwire Prefs registered")
 
 spw.fields = {header, magic1, unknw2, plen, magic2, len4, ctrl, susyID, sessID, serial,
     dp01, dp02, dp03, dp04, dp05, dp06, dp07, dp08, dp09, dp10, dp11, dp12, dp13, dp14, dp15, dp16,
-    dp17, dp18, dp19, dp20, dp21, cmd,
+    dp17, dp18, dp19, dp20, dp21, cmd, tstamp,
     lridef, val1, val2, val3, val4, str1, hex1,
     cmd_flag1, cmd_flag2, cmd_flag3, cmd_flag4, cmd_flag5, cmd_flag6, cmd_flag7, cmd_flag8
 }
