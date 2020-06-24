@@ -1,3 +1,14 @@
+--[[
+Protocol     : speedwire (SMA-Data embedded in speedwire on IP/ethernet)
+Template by  : Guy Coen
+Version      : 00.00.001
+
+Brief: 
+Speedwire is a proprietary protocol developed by SMA, a
+manufacturer of photovoltaic inverters.
+
+--]]
+
 local debug_level = {
     DISABLED = 0,
     LEVEL_1  = 1,
@@ -60,8 +71,6 @@ reset_debug_level()
 dprint2("Wireshark version = ", get_version())
 dprint2("Lua version = ", _VERSION)
 
-
-
 ----------------------------------------------
 -- Assert Wireshark version
 
@@ -96,8 +105,6 @@ local ctrl   = ProtoField.new("spw.ctrl", "spw.ctrl",     ftypes.UINT8, ctrl_typ
 local susyID = ProtoField.new("spw.susyID", "spw.susyID", ftypes.UINT32, nil, base.HEX)
 local serial = ProtoField.new("spw.serial", "spw.serial", ftypes.UINT32)
 local sessID = ProtoField.new("spw.sessID", "spw.sessID", ftypes.UINT32)
-
-local obis   = ProtoField.new("spw.obis", "spw.obis",     ftypes.BYTES)
 
 local dp01    = ProtoField.new("spw.dp01", "spw.dp01",    ftypes.BYTES)
 local dp02    = ProtoField.new("spw.dp02", "spw.dp02",    ftypes.BYTES)
@@ -217,43 +224,6 @@ local lritable = {
 
 local lridef      = ProtoField.new("spw.lridef", "spw.lridef",      ftypes.UINT32, lritable, base.HEX, 0x00ffff00)
 
-
-local cmd_table = {
-		[01] = "CMD_GET_NET",				
-		[02] = "CMD_SEARCH_DEVICE",			
-		[03] = "CMD_CFG_NETADR",			
-		[04] = "CMD_SET_GRPADR",
-		[05] = "CMD_DEL_GRPADR",
-		[06] = "CMD_GET_NET_START",
-		[09] = "CMD_GET_CINFO",
-		[10] = "CMD_SYN_ONLINE",
-		[11] = "CMD_GET_DATA",
-		[12] = "CMD_SET_DATA",
-		[13] = "CMD_GET_SINFO",
-		[15] = "CMD_SET_MPARA",
-		[20] = "CMD_GET_MTIME",
-		[21] = "CMD_SET_MTIME",
-		[30] = "CMD_GET_BINFO",
-		[31] = "CMD_GET_BIN",
-		[32] = "CMD_SET_BIN",
-		[40] = "CMD_PDELIMIT",			
-		[50] = "CMD_TNR_VERIFY",
-		[51] = "CMD_VAR_VALUE",
-		[52] = "CMD_VAR_FIND",
-		[53] = "CMD_VAR_STATUS_OUT",
-		[54] = "CMD_VAR_DEFINE_OUT",
-		[55] = "CMD_VAR_STATUS_IN",
-		[56] = "CMD_VAR_DEFINE_IN",
-		[60] = "CMD_TEAM_FUNCTION"
-}
-
-local obis_src    = ProtoField.new("spw.obis.src", "spw.obis.src",	ftypes.UINT16, nil, base.HEX, 0xffff)
-local obis_dst    = ProtoField.new("spw.obis.dst", "spw.obis.dst",	ftypes.UINT16, nil, base.HEX, 0xffff)
-local obis_ctl    = ProtoField.new("spw.obis.ctl", "spw.obis.ctl",	ftypes.UINT8,  nil, base.HEX, 0xf0)
-local obis_cnt    = ProtoField.new("spw.obis.cnt", "spw.obis.cnt",	ftypes.UINT8,  nil, base.DEC)
-local obis_cmd    = ProtoField.new("spw.obis.cmd", "spw.obis.cmd",	ftypes.UINT8,  nil, base.DEC)
-local obis_dta    = ProtoField.new("spw.obis.dta", "spw.obis.dta",	ftypes.BYTES)
-
 --------------------------------------------------------------------------------
 -- preferences handling stuff
 --------------------------------------------------------------------------------
@@ -276,7 +246,7 @@ spw.prefs.port  = Pref.uint("Port number", default_settings.port,
 spw.prefs.heur  = Pref.bool("Heuristic enabled", default_settings.heur_enabled,
                             "Whether heuristic dissection is enabled or not")
 
-----------------------------------------
+---------------------------------------------------
 -- a function for handling prefs being changed
 function spw.prefs_changed()
     dprint2("prefs_changed called")
@@ -306,7 +276,6 @@ end
 dprint2("Speedwire Prefs registered")
 
 spw.fields = {header, magic1, unknw2, plen, magic2, len4, ctrl, susyID, sessID, serial,
-	obis, obis_src, obis_dst, obis_ctl, obis_cnt, obis_cmd, obis_dta, tstamp,
     dp01, dp02, dp03, dp04, dp05, dp06, dp07, dp08, dp09, dp10, dp11, dp12, dp13, dp14, dp15, dp16,
     dp17, dp18, dp19, dp20, dp21, cmd,
     lridef, val1, val2, val3, val4, str1, hex1,
@@ -363,10 +332,7 @@ function spw.dissector(tvbuf, pktinfo, root)
 	    elseif (plength > 2) then
             tree:add(magic2,  tvbuf(14,4))   -- 00 10 60 65
             tree:add_le(susyID, tvbuf(18,4))
-	    	-- tree:add(len4  ,  tvbuf(18,1))   -- packet length / 4
-	    	-- tree:add(ctrl   , tvbuf(19,1))   -- control
-	    	-- local ctl = string.format("%X",tvbuf(19,1):uint())
-	    	-- tree:add_le(susyID , tvbuf(20,2))
+
 	    	local sid = tvbuf:range(18,4):uint()
             str = string.format("%08X",sid):sub(3,8)
             print(str)
