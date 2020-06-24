@@ -6,6 +6,7 @@ Thus Lua dissector for Wireshark helps in analyzing issues with SMA devices usin
 The various pcapng capture files allow you to play around with the dissector. They each illustrate a different aspect of the dissector:
 - sbfspot.pcapng illustrates analysis using the SBFspot tool
 - sma2.pcapng illustrates active power curtailment using the DataManager M 
+- discover.pcapng illustrates device discovery
 
 This project is still in a very early stage. If you have ideas for improvement or if you have additional documentation that you can share, help would be much appreciated!
 
