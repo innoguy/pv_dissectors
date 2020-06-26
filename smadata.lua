@@ -72,14 +72,6 @@ assert(ProtoExpert.new, "Wireshark does not have the ProtoExpert class, so it's 
 
 local smd = Proto("sma-data","SMA Data Protocol")
 
-local start   = ProtoField.new("smd.start",   "smd.start" ,  ftypes.UINT8) -- 7E
-local address = ProtoField.new("smd.address", "smd.magic1",  ftypes.UINT8) -- FF
-local control = ProtoField.new("smd.control", "smd.control", ftypes.UINT8) -- 03
-local header  = ProtoField.new("smd.header" , "smd.header",  ftypes.UINT16)
-local data    = ProtoField.new("smd.data",    "smd.data",    ftypes.BYTES)
-local fcs     = ProtoField.new("smd.fcs" ,    "smd.fcs",     ftypes.UINT16)
-local stop    = ProtoField.new("smd.stop" ,   "smd.stop",    ftypes.UINT8) -- 7E
-
 local cmd_table = {
 		[01] = "CMD_GET_NET",				
 		[02] = "CMD_SEARCH_DEVICE",			
@@ -108,6 +100,56 @@ local cmd_table = {
 		[56] = "CMD_VAR_DEFINE_IN",
 		[60] = "CMD_TEAM_FUNCTION"
 }
+
+
+local start   = ProtoField.new("smd.start",   "smd.start" ,  ftypes.UINT8, nil, base.HEX) -- 7E
+local address = ProtoField.new("smd.address", "smd.magic1",  ftypes.UINT8, nil, base.HEX) -- FF
+local control = ProtoField.new("smd.control", "smd.control", ftypes.UINT8, nil, base.HEX) -- 03
+
+header_table = {
+    [0x4041] = "SMA Data Telegram",
+    [0x4051] = "TCP/IP Supplementary Module",
+    [0x4043] = "Software Update System"
+}
+
+local header  = ProtoField.new("smd.header" , "smd.header",  ftypes.UINT16, header_table, base.HEX, 0xffff)
+local data    = ProtoField.new("smd.data",    "smd.data",    ftypes.BYTES)
+local fcs     = ProtoField.new("smd.fcs" ,    "smd.fcs",     ftypes.UINT16, nil, base.HEX)
+local stop    = ProtoField.new("smd.stop" ,   "smd.stop",    ftypes.UINT8, nil, base.HEX) -- 7E
+
+local src = ProtoField.new("smd.data.src", "smd.data.src", 
+		ftypes.UINT16, nil, base.HEX)
+local dst = ProtoField.new("smd.data.dst",   "smd.data.dst",    
+		ftypes.UINT16, nil, base.HEX)
+
+local ctl1 = {
+    [0x0] = "Network address mode",
+    [0x1] = "Group address mode"
+}
+
+local ctl2 = {
+    [0x0] = "Inquiry",
+    [0x1] = "Response"
+}
+
+local ctl3 = {
+    [0x0] = "Non blockng",
+    [0x1] = "Blocking"
+}
+
+local ctl = ProtoField.new("smd.data.ctl", "smd.data.ctl",       
+	ftypes.UINT8, ctl, base.HEX,  0xD0)
+local ctl1 = ProtoField.new("smd.data.ctl1", "smd.data.ctl1",    
+	ftypes.UINT8, ctl1, base.HEX, 0x80)
+local ctl2 = ProtoField.new("smd.data.ctl2", "smd.data.ctl2",    
+	ftypes.UINT8, ctl2, base.HEX, 0x40)
+local ctl3 = ProtoField.new("smd.data.ctl3", "smd.data.ctl3",    
+	ftypes.UINT8, ctl3, base.HEX, 0x10)
+
+
+local cnt = ProtoField.new("smd.data.cnt",   "smd.data.cnt",    ftypes.UINT8)
+local cmd = ProtoField.new("smd.data.cmd",   "smd.data.cmd",    ftypes.UINT8, cmd_table, base.HEX, 0xff)
+
 
 
 --------------------------------------------------------------------------------
@@ -161,7 +203,8 @@ end
 
 dprint2("Speedwire Prefs registered")
 
-smd.fields = {start, address, control, header, data, fcs, stop}
+smd.fields = {start, address, control, header, data, fcs, stop,
+		src, dst, cnt, cmd, ctl, ctl1, ctl2, ctl3}
 
 ----------------------------------------
 -- create some expert info fields (this is new functionality in 1.11.3)
@@ -186,10 +229,15 @@ local ef_bad_query = ProtoExpert.new("smd.query.missing.expert", "Speedwire quer
 smd.experts = { ef_query, ef_too_short, ef_bad_query, ef_response, ef_ultimate }
 
 function smd.dissector(tvbuf, pktinfo, root)
-	length = tvbuf:len()
 
-	if length == 0 then return end
+
+    length = tvbuf:len()
+	if length == 0 then 
+	    return 
+	end
+		
     pktinfo.cols.protocol:set("sma-data")
+
     local pktlen = tvbuf:reported_length_remaining()
     local tree    = root:add(smd, tvbuf:range(0, pktlen), "SMA Data")
     local subtree = tree:add(smd, tvbuf:range(0, pktlen), "Command")
@@ -198,9 +246,17 @@ function smd.dissector(tvbuf, pktinfo, root)
     tree:add(address , tvbuf(1,1))
     tree:add(control , tvbuf(2,1))
     tree:add(header  , tvbuf(3,2))
-    tree:add(data    , tvbuf(5,3))
-    tree:add(fcs     , tvbuf(8,2))
-    tree:add(stop    , tvbuf(10,1))
+    tree:add(data    , tvbuf(5,length-8))
+    subtree:add(src, tvbuf(5,2))
+    subtree:add(dst, tvbuf(7,2))
+    subtree:add(ctl1, tvbuf(9,1))
+    subtree:add(ctl2, tvbuf(9,1))
+    subtree:add(ctl3, tvbuf(9,1))
+    subtree:add(cnt, tvbuf(10,1))
+    subtree:add(cmd, tvbuf(11,1))
+        
+    tree:add(fcs     , tvbuf(length-3,2))
+    tree:add(stop    , tvbuf(length-1,1))
 end
 
 DissectorTable.get("udp.port"):add(default_settings.port, smd)
