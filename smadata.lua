@@ -1,3 +1,20 @@
+--[[
+
+    Name         :  smadata.lua
+    Author       :  Guy Coen
+    Company      :  Mind4Energy NV
+
+    Description  
+        This Lua dissector for Wireshark dissects the SMA Data protocol for 
+        the following SMA inverters:
+            
+		- To be completed
+
+    Current limitations
+        - Only tested with Wireshark 3.2.5
+       
+--]]
+
 local debug_level = {
     DISABLED = 0,
     LEVEL_1  = 1,
