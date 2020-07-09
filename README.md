@@ -1,9 +1,12 @@
-# speedwire
-Wireshark Lua dissector for SMA devices
+# PV dissectors
+Wireshark Lua dissectors for PV devices
 
-Thus Lua dissector for Wireshark helps in analyzing issues with SMA devices using the SMA proprietary Speedwire protocol. By lack of specifications, this dissector has been developed mostly based on trial and error analysis of existing Wireshark captures and code snippets found in other tools like SBFspot, YASDI, DeviceDiscovery,...
+Thus Lua dissector for Wireshark helps in analyzing issues with several PV devices. Currently, the following devices are supported:
+- SMA inverters using the speedwire protocol
+- SMA inverters using the SMA Data protocol
+- Sungrow inverters
 
-The various pcapng capture files allow you to play around with the dissector. They each illustrate a different aspect of the dissector:
+The various pcapng capture files allow you to play around with the dissectors. They each illustrate a different aspect of the dissector:
 - sbfspot.pcapng illustrates analysis using the SBFspot tool
 - sma2.pcapng illustrates active power curtailment using the DataManager M 
 - discover.pcapng illustrates device discovery
