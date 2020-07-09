@@ -1,13 +1,22 @@
 --[[
-Protocol     : speedwire (SMA-Data embedded in speedwire on IP/ethernet)
-Template by  : Guy Coen
-Version      : 00.00.001
 
-Brief: 
-Speedwire is a proprietary protocol developed by SMA, a
-manufacturer of photovoltaic inverters.
+    Name         :  speedwire.lua
+    Author       :  Guy Coen
+    Date         :  July 9, 2020
+    Company      :  Mind4Energy NV
 
+    Description  
+        This Lua dissector for Wireshark dissects the SMA speedwire protocol for 
+        the following SMA inverters:
+            
+		- To be completed
+
+    Current limitations
+        - Only tested with Wireshark 3.2.5
+	- Only tested for Speedwire on IP/Ethernet
+       
 --]]
+
 
 local debug_level = {
     DISABLED = 0,
