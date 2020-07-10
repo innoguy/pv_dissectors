@@ -154,11 +154,7 @@ function sungrow.dissector(tvbuf, pktinfo, root)
     local rf  = tvbuf(9,2):uint()
 
     function hex32_string_to_dec(s)
-        s1 = s:sub(1,4)
-        s2 = s:sub(5,8)
-        local sr = s2 .. s1
-        local num = (tonumber(sr, 16) + 2^31) % 2^32 - 2^31
-        return num
+	    return bit32.lrotate('0x' .. s ,16)
     end
 
     modbus_dissector:call(tvbuf, pktinfo, root)
@@ -230,19 +226,19 @@ function sungrow.dissector(tvbuf, pktinfo, root)
         tree:add(DevTyp  , tvbuf(149, 2))       -- 15070
         tree:add(ActPowR , tvbuf(151, 2))       -- 15071
         tree:add(OutTyp  , tvbuf(153, 2))       -- 15072
-        num = hex32_string_to_dec(tvbuf(155,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(155,4))
         tree:add(DPowY   , tvbuf(155, 4), num)  -- 15073
-        num = hex32_string_to_dec(tvbuf(159,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(159,4))
         tree:add(MPowY   , tvbuf(159, 4), num)  -- 15075
-        num = hex32_string_to_dec(tvbuf(163,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(163,4))
         tree:add(TPowY   , tvbuf(163, 4), num)  -- 15077
-        num = hex32_string_to_dec(tvbuf(167,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(167,4))
         tree:add(CO2red  , tvbuf(167, 4), num)  -- 15079
         tree:add(GrConnM , tvbuf(171, 2))       -- 15081
-        num = hex32_string_to_dec(tvbuf(173,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(173,4))
         tree:add(RunHrs  , tvbuf(173, 4), num)   -- 15082
         -- tree:add(Gap2    , tvbuf(177, 16))  
-        num = hex32_string_to_dec(tvbuf(193,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(193,4))
         tree:add(DCp     , tvbuf(193, 4), num)   -- 15092
         tree:add(ABvolt  , tvbuf(197, 2))        -- 15094
         tree:add(BCvolt  , tvbuf(199, 2))        -- 15095
@@ -250,41 +246,41 @@ function sungrow.dissector(tvbuf, pktinfo, root)
         tree:add(CurrA   , tvbuf(203, 2))        -- 15097
         tree:add(CurrB   , tvbuf(205, 2))        -- 15098
         tree:add(CurrC   , tvbuf(207, 2))        -- 15099
-        num = hex32_string_to_dec(tvbuf(209,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(209,4))
         tree:add(ActPow  , tvbuf(209, 4), num)   -- 15100
-        num = hex32_string_to_dec(tvbuf(213,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(213,4))
         tree:add(RctPow  , tvbuf(213, 4), num)   -- 15102
-        num = hex32_string_to_dec(tvbuf(217,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(217,4))
         tree:add(AppPow  , tvbuf(217, 4), num)   -- 15104
         tree:add(PF      , tvbuf(221, 2))        -- 15106
         tree:add(Freq    , tvbuf(223, 2))        -- 15107
         tree:add(RctPowR , tvbuf(225, 2))        -- 15108
-        num = hex32_string_to_dec(tvbuf(227,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(227,4))
         tree:add(APLFb   , tvbuf(227, 4),num)    -- 15109
-        num = hex32_string_to_dec(tvbuf(231,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(231,4))
         tree:add(RPLFb   , tvbuf(231, 4),num)    -- 15110
         tree:add(PFFb    , tvbuf(235, 2))        -- 15111
         tree:add(TNS     , tvbuf(237, 2))        -- 15112
-        num = hex32_string_to_dec(tvbuf(239,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(239,4))
         tree:add(APY     , tvbuf(239, 4),num)    -- 15113
         tree:add(OWS     , tvbuf(243, 2))        -- 15114
     end
 
     if ((fc == 4) and (bc == 136)) then 
         local tree = root:add(sungrow, tvbuf:range(5, 136), "ModbusSungrow")
-        num = hex32_string_to_dec(tvbuf(5,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(9,4))
         tree:add(DPowY   , tvbuf(9, 4),num)     -- 15150
-        num = hex32_string_to_dec(tvbuf(13,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(13,4))
         tree:add(MPowY   , tvbuf(13, 4),num)    -- 15152
-        num = hex32_string_to_dec(tvbuf(17,4):bytes(ENC_ASCII):tohex())
-        tree:add(TPowY   , tvbuf(17, 4))        -- 15154
+        num = hex32_string_to_dec(tvbuf(17,4))
+        tree:add(TPowY   , tvbuf(17, 4),num)    -- 15154
         tree:add(GrConnM , tvbuf(21, 2))        -- 15156
-        num = hex32_string_to_dec(tvbuf(23,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(23,4))
         tree:add(RunHrs  , tvbuf(23, 4),num)    -- 15157
         tree:add(ITmp    , tvbuf(27, 2))        -- 15159
         tree:add(DCv     , tvbuf(29, 2))        -- 15160
         tree:add(DCc     , tvbuf(31, 2))        -- 15161
-        num = hex32_string_to_dec(tvbuf(31,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(33,4))
         tree:add(DCp     , tvbuf(33, 4),num)    -- 15162
         tree:add(ABvolt  , tvbuf(37, 2))        -- 15164
         tree:add(BCvolt  , tvbuf(39, 2))        -- 15165
@@ -292,13 +288,13 @@ function sungrow.dissector(tvbuf, pktinfo, root)
         tree:add(CurrA   , tvbuf(43, 2))        -- 15167
         tree:add(CurrB   , tvbuf(45, 2))        -- 15168
         tree:add(CurrC   , tvbuf(47, 2))        -- 15169
-        num = hex32_string_to_dec(tvbuf(49,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(49,4))
         tree:add(ActPow  , tvbuf(49, 4), num)   -- 15170
-        num = hex32_string_to_dec(tvbuf(53,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(53,4))
         tree:add(RctPow  , tvbuf(53, 4), num)   -- 15172
         tree:add(PF      , tvbuf(57, 2))        -- 15174
         tree:add(Freq    , tvbuf(59, 2))        -- 15175
-        --num = hex32_string_to_dec(tvbuf(61,4):bytes(ENC_ASCII):tohex())
+        --num = hex32_string_to_dec(tvbuf(61,4))
         tree:add(Effcy   , tvbuf(61, 2))        -- 15176
         tree:add(STY     , tvbuf(65, 2))        -- 15178
         tree:add(STM     , tvbuf(67, 2))        -- 15179
@@ -306,16 +302,16 @@ function sungrow.dissector(tvbuf, pktinfo, root)
         tree:add(STh     , tvbuf(71, 2))        -- 15181
         tree:add(STm     , tvbuf(73, 2))        -- 15182
         tree:add(STs     , tvbuf(75, 2))        -- 15183
-        tree:add(Gap0    , tvbuf(77, 2))        -- 15184
+        -- tree:add(Gap0    , tvbuf(77, 2))        -- 15184
         tree:add(RctPowR , tvbuf(79, 2))        -- 15185
-        num = hex32_string_to_dec(tvbuf(81,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(81,4))
         tree:add(FS1     , tvbuf(81, 4),num)    -- 15186
-        num = hex32_string_to_dec(tvbuf(85,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(85,4))
         tree:add(FS2     , tvbuf(85, 4),num)    -- 15188
-        tree:add(Gap1    , tvbuf(89, 8),num)    -- 15190
-        num = hex32_string_to_dec(tvbuf(97,4):bytes(ENC_ASCII):tohex())
+        -- tree:add(Gap1    , tvbuf(89, 8))    -- 15190
+        num = hex32_string_to_dec(tvbuf(97,4))
         tree:add(NS1     , tvbuf(97, 4),num)    -- 15194
-        num = hex32_string_to_dec(tvbuf(101,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(101,4))
         tree:add(NS2     , tvbuf(101, 4),num)   -- 15196
         tree:add(Tmp1    , tvbuf(105, 2))       -- 15198
         tree:add(Tmp2    , tvbuf(107, 2))       -- 15199
@@ -323,19 +319,19 @@ function sungrow.dissector(tvbuf, pktinfo, root)
         tree:add(Tmp4    , tvbuf(111, 2))       -- 15201
         tree:add(Tmp5    , tvbuf(113, 2))       -- 15202
         tree:add(Tmp6    , tvbuf(115, 2))       -- 15203
-        num = hex32_string_to_dec(tvbuf(117,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(117,4))
         tree:add(PRg     , tvbuf(117, 4),num)   -- 15204
-        num = hex32_string_to_dec(tvbuf(121,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(121,4))
         tree:add(NRg     , tvbuf(121, 4),num)   -- 15206
-        num = hex32_string_to_dec(tvbuf(125,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(125,4))
         tree:add(WS      , tvbuf(125, 4),num)   -- 15208
-        num = hex32_string_to_dec(tvbuf(129,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(129,4))
         tree:add(AS      , tvbuf(129, 4),num)   -- 15210
         tree:add(NVg     , tvbuf(133, 2))       -- 15212
-        num = hex32_string_to_dec(tvbuf(135,4):bytes(ENC_ASCII):tohex())
+        num = hex32_string_to_dec(tvbuf(135,4))
         tree:add(APY     , tvbuf(135, 4),num)   -- 15213
-        num = hex32_string_to_dec(tvbuf(139,4):bytes(ENC_ASCII):tohex())
-        tree:add(CO2red  , tvbuf(139, 4))       -- 15215
+        num = hex32_string_to_dec(tvbuf(139,4))
+        tree:add(CO2red  , tvbuf(139, 4),num)   -- 15215
         tree:add(RTmp    , tvbuf(143, 2))       -- 15217
     end
 end
