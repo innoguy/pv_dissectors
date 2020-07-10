@@ -160,14 +160,16 @@ function sungrow.dissector(tvbuf, pktinfo, root)
     modbus_dissector:call(tvbuf, pktinfo, root)
 
     if (fc == 16) then 
+        len = tvbuf:range(4,2):uint()
         if (rg == 15011) then
-            local tree = root:add(sungrow, tvbuf:range(7, 8), "ModbusSungrow")
-            -- local tree = root:add(sungrow, tvbuf:range(7, 3), "ModbusSungrow")
+            local tree = root:add(sungrow, tvbuf:range(7, len-1), "ModbusSungrow")
             tree:add(FCode   , tvbuf(7, 1))      -- Modbus function code
             tree:add(Reg     , tvbuf(8, 2))      -- Byte count
             tree:add(WCnt    , tvbuf(10, 2))     -- Byte count
-            tree:add(BCnt    , tvbuf(12, 1))     -- Byte count
-            tree:add(Val     , tvbuf(13, 2))     -- Byte count 
+            if (len>=8) then
+                tree:add(BCnt    , tvbuf(12, 1))     -- Byte count
+                tree:add(Val     , tvbuf(13, 2))     -- Byte count 
+            end
         end   
     end
 
